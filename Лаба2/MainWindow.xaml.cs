@@ -48,6 +48,9 @@ namespace Лаба2
         int[] сena;
         public List<Elemente> Pokupki = new List<Elemente>();
         public List<int> PolezniePokupki = new List<int>();
+        public List<string> PokupkiK = new List<string>();
+        public List<Elemente> KategPok = new List<Elemente>();
+        public List<int> BestPokupkiK = new List<int>();
         private void ChooseFileClick(object sender, RoutedEventArgs e)
         {
             try
@@ -70,16 +73,23 @@ namespace Лаба2
                     string[] aaa = new string[4];
                     aaa = Spisok[i].Split(':');
                     Pokupki.Add(item: new Ort() { Kategorie = aaa[0], Name = aaa[1], Preis = Convert.ToInt32(aaa[2]), Nutzlichkeit = Convert.ToInt32(aaa[3]) });
+                    PokupkiK.Add(aaa[0]);
                     сena[i] = Convert.ToInt32(aaa[2]);
                     polesnost[i] = Convert.ToInt32(aaa[3]);
                 }
                 Menu.ItemsSource = Pokupki;
+                for (int i = 0; i < PokupkiK.Count; i++)            
+                    for (int j = i + 1; j < PokupkiK.Count; j++)
+                        if (PokupkiK[i] == PokupkiK[j])
+                            PokupkiK.RemoveAt(j);
+                Kateg.ItemsSource = PokupkiK;
             }
             catch (Exception)
             {
                 MessageBox.Show("Измените формат файла или путь к файлу");
                 Put.Text = "Путь к файлу...";
             }
+
         }
         private void Itogo_Click(object sender, RoutedEventArgs e)
         {
@@ -96,6 +106,35 @@ namespace Лаба2
             catch (Exception)
             {
                 MessageBox.Show("Введите сумму денег с помощью цифр");
+            }
+        }
+        private void Kateg_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                KategPok.Clear();
+                BestPokupkiK.Clear();
+                Knapsack.Items.Clear();
+                for (int i = 0; i < Pokupki.Count; i++)
+                    if (Pokupki[i].Kategorie == PokupkiK[Kateg.SelectedIndex])
+                        KategPok.Add(Pokupki[i]);
+                int[] polesnostK = new int[KategPok.Count];
+                int[] cenaK = new int[KategPok.Count];
+                for (int i = 0; i < KategPok.Count; i++)
+                {
+                    cenaK[i] = KategPok[i].Preis;
+                    polesnostK[i] = KategPok[i].Nutzlichkeit;
+                }
+                int j;
+                int money = Math.Abs(Convert.ToInt32(Summa.Text));
+                BestPokupkiK = Knapsack_problem.knapsack(cenaK, polesnostK, money);
+                for (j = 0; j < (BestPokupkiK.Count - 1); j++)
+                    Knapsack.Items.Add(KategPok[BestPokupkiK[j]].Name);
+                Knapsack.Items.Add("Итоговая полезность: " + BestPokupkiK[j]);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Введите сумму денег");
             }
         }
     }
